@@ -3,5 +3,5 @@
 # Design Laboratory - Project FIT in ALICE
 # FPGA
 
-# Marszałek Jakub
-# Szmyd Wiktor
+#Marszałek Jakub
+#Szmyd Wiktor
