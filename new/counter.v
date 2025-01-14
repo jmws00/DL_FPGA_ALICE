@@ -1,25 +1,57 @@
-// Module generating a single pulse at the output
-module pulse_generator(
-    input wire clk,          // System clock
-    input wire [31:0] set_time,  // Time set by the user
-    input wire rst,          // Reset
-    output reg pulse_out     // Pulse output
+module signal_generator #(
+    parameter WIDTH = 8, // Szerokość rejestru N
+    parameter T2 = 2
+)(
+    input wire clk,         // Zegar
+    input wire reset,       // Reset asynchroniczny
+    input wire [WIDTH-1:0] N, // Rejestr sygnału
+    input wire [31:0] T1,   // Czas powtarzania serii w cyklach zegara
+    output reg signal_out   // Wyjście sygnału
 );
 
-    reg [31:0] counter;      // Clock cycle counter
+    reg [31:0] clk_counter = 0;       // Licznik zegara
+    reg [31:0] pulse_counter = 0;    // Licznik impulsu
+    reg [WIDTH-1:0] index = 0; // Indeks bieżącego bitu w N
+    
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            counter <= 32'd0;
-            pulse_out <= 1'b0;
+    always @(posedge clk) begin
+
+        if (reset) begin
+            // Reset wszystkich sygnałów
+            clk_counter <= 0;
+            pulse_counter <= 0;
+            index <= 0;
+            signal_out <= 0;
+            
         end else begin
-            // Increment the counter at each clock tick
-            if (counter == set_time) begin
-                pulse_out <= 1'b1; // Generate pulse at the specified time
+        // Inkrementacja licznika zegara
+        clk_counter <= clk_counter + 1;
+            if (clk_counter < T1) begin
+                
+                    if (index < WIDTH) begin
+                        // Generowanie impulsu dla bieżącego bitu
+                        if (pulse_counter < T2) begin
+                            signal_out <= N[index];
+                            pulse_counter <= pulse_counter + 1;
+                        end else begin
+                            // Przejście do kolejnego bitu
+                            pulse_counter <= 0;
+                            index <= index + 1;
+                        end
+                    end else begin
+                        // Wszystkie bity przetworzone, wyjście na 0
+                        signal_out <= 0;
+                    end
+                
             end else begin
-                pulse_out <= 1'b0;
+                // Koniec T1, zresetuj wszystko
+                clk_counter <= 0;
+                pulse_counter <= 0;
+                index <= 0;
+                signal_out <= 0;
             end
-            counter <= counter + 1;
+
         end
+        
     end
 endmodule
