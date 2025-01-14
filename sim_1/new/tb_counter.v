@@ -1,46 +1,57 @@
 `timescale 1ns / 1ps
 
-module pulse_generator_tb;
+module signal_generator_tb;
+
+    // Parameters
+    parameter WIDTH = 8;
+    parameter T2 = 9;
+
     // Inputs
     reg clk;
-    reg [31:0] set_time;
-    reg rst;
+    reg reset;
+    reg [WIDTH-1:0] N;
+    reg [31:0] T1;
 
     // Output
-    wire pulse_out;
+    wire signal_out;
 
-    // Instantiate the pulse_generator module
-    pulse_generator uut (
+    // Instantiate the Unit Under Test (UUT)
+    signal_generator #(
+        .WIDTH(WIDTH),
+        .T2(T2)
+    ) uut (
         .clk(clk),
-        .set_time(set_time),
-        .rst(rst),
-        .pulse_out(pulse_out)
+        .reset(reset),
+        .N(N),
+        .T1(T1),
+        .signal_out(signal_out)
     );
 
     // Clock generation
     initial begin
-        clk = 0;
-        forever #5 clk = ~clk; // 100 MHz clock (10 ns period)
+        clk = 1;
+        forever #0.5 clk = ~clk; 
     end
 
-    // Test stimulus
+    // Test sequence
     initial begin
         // Initialize inputs
-        rst = 1;
-        set_time = 32'd15; // Set the time to generate the pulse after 15 clock cycles
+        reset = 1;
+        N = 8'b11101101; // Example pattern
+        T1 = 32'd1000;     // Repeat every 50 clock cycles
+
+        // Wait for the reset to propagate
+        #20;
+        reset = 0;
+
+        // Observe the signal output for several cycles
+        #1500;
+
         
-        // Apply reset
-        #10 rst = 0;
-        
-        // Observe pulse generation after the set time
-        #200;
-        
-        // End simulation
-        $stop;
+
+        // Finish simulation
+        $finish;
     end
 
-    // Monitor outputs
-    initial begin
-        $monitor("At time %t, set_time = %d, pulse_out = %b", $time, set_time, pulse_out);
-    end
+
 endmodule
