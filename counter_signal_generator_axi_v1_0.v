@@ -15,7 +15,8 @@
 	)
 	(
 		// Users to add ports here
-
+        output wire signal_out,
+        input wire clk,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -48,6 +49,8 @@
 		.C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
 		.C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
 	) counter_signal_generator_axi_v1_0_S00_AXI_inst (
+	    .signal_out(signal_out),
+	    .clk(clk),
 		.S_AXI_ACLK(s00_axi_aclk),
 		.S_AXI_ARESETN(s00_axi_aresetn),
 		.S_AXI_AWADDR(s00_axi_awaddr),
