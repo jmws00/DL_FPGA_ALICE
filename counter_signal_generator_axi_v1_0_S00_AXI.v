@@ -4,6 +4,7 @@
 	(
 		// Users to add parameters here
         parameter integer WIDTH = 32,
+        parameter integer T2 = 2,
 		// User parameters ends
 		// Do not modify the parameters beyond this line
 
@@ -14,7 +15,8 @@
 	)
 	(
 		// Users to add ports here
-        
+        output wire signal_out,
+        input wire clk,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -221,8 +223,8 @@
 	    begin
 	      slv_reg0 <= 0;
 	      slv_reg1 <= 0;
-	      //slv_reg2 <= 0;
-	      //slv_reg3 <= 0;
+	      slv_reg2 <= 0;
+	      slv_reg3 <= 0;
 	    end 
 	  else begin
 	    if (slv_reg_wren)
@@ -247,20 +249,20 @@
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 2
-	                //slv_reg2[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	                slv_reg2[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
 	          2'h3:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 3
-	                //slv_reg3[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	                slv_reg3[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
 	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      slv_reg1 <= slv_reg1;
-	                      //slv_reg2 <= slv_reg2;
-	                      //slv_reg3 <= slv_reg3;
+	                      slv_reg2 <= slv_reg2;
+	                      slv_reg3 <= slv_reg3;
 	                    end
 	        endcase
 	      end
@@ -401,21 +403,32 @@
     wire ARESET;
     assign ARESET = ~S_AXI_ARESETN;
     
-    wire [C_S_AXI_DATA_WIDTH-1:0] slv_wire2;
-    always @(posedge S_AXI_ACLK)
-    begin
-        slv_reg2 <= slv_wire2;
-    end
+//    wire [C_S_AXI_DATA_WIDTH-1:0] slv_wire2;
+//    always @(posedge S_AXI_ACLK)
+//    begin
+//        slv_reg2 <= slv_wire2;
+//    end
     
-    assign slv_wire2[31:0] = 32'b0;
-    
-    signal_generator signal_generator_inst(
-    S_AXI_ACLK,             //clk
-    ARESET,                 //reset
-    slv_reg0[WIDTH-1:0],    //N
-    slv_reg1[31:0],         //T1
-    slv_wire2[31:0]         //signal_out
+//    assign slv_wire2[31:0] = 32'b0;
+   
+    signal_generator #(
+    .WIDTH(32),
+    .T2(2)
+    ) signal_generator_inst (
+    .clk(clk),                       //clk
+    .reset(ARESET),                 //reset
+    .N(slv_reg0[WIDTH-1:0]),    //N
+    .T1(slv_reg1[31:0]),         //T1
+    .signal_out(signal_out)         //signal_out
     );
+        
+//    signal_generator signal_generator_inst(
+//    clk,                       //clk
+//    ARESET,                 //reset
+//    slv_reg0[WIDTH-1:0],    //N
+//    slv_reg1[31:0],         //T1
+//    signal_out         //signal_out
+//    );
     
 	// User logic ends
 
@@ -424,25 +437,25 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 module signal_generator #(
-    parameter WIDTH = 8, // Szerokoœæ rejestru N
+    parameter WIDTH = 8, // SzerokoÅ›Ä‡ rejestru N
     parameter T2 = 2
 )(
     input wire clk,         // Zegar
     input wire reset,       // Reset asynchroniczny
-    input wire [WIDTH-1:0] N, // Rejestr sygna³u
+    input wire [WIDTH-1:0] N, // Rejestr sygnaÅ‚u
     input wire [31:0] T1,   // Czas powtarzania serii w cyklach zegara
-    output reg signal_out   // Wyjœcie sygna³u
+    output reg signal_out   // WyjÅ›cie sygnaÅ‚u
 );
 
     reg [31:0] clk_counter = 0;       // Licznik zegara
     reg [31:0] pulse_counter = 0;    // Licznik impulsu
-    reg [WIDTH-1:0] index = 0; // Indeks bie¿¹cego bitu w N
+    reg [4:0] index = 0; // Indeks bieÅ¼Ä…cego bitu w N
     
 
     always @(posedge clk) begin
 
         if (reset) begin
-            // Reset wszystkich sygna³ów
+            // Reset wszystkich sygnaÅ‚Ã³w
             clk_counter <= 0;
             pulse_counter <= 0;
             index <= 0;
@@ -454,17 +467,17 @@ module signal_generator #(
             if (clk_counter < T1) begin
                 
                     if (index < WIDTH) begin
-                        // Generowanie impulsu dla bie¿¹cego bitu
+                        // Generowanie impulsu dla bieÅ¼Ä…cego bitu
                         if (pulse_counter < T2) begin
                             signal_out <= N[index];
                             pulse_counter <= pulse_counter + 1;
                         end else begin
-                            // Przejœcie do kolejnego bitu
+                            // PrzejÅ›cie do kolejnego bitu
                             pulse_counter <= 0;
                             index <= index + 1;
                         end
                     end else begin
-                        // Wszystkie bity przetworzone, wyjœcie na 0
+                        // Wszystkie bity przetworzone, wyjÅ›cie na 0
                         signal_out <= 0;
                     end
                 
