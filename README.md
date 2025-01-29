@@ -2,7 +2,7 @@
 
 ## Opis projektu
 
-System kontroli lasera zaimplementowany na płytce Artix-7 FPGA, wykorzystujący procesor MicroBlaze. Projekt umożliwia generowanie precyzyjnych serii impulsów laserowych z konfigurowalnymi parametrami czasowymi.
+Projekt oparty na płytce Arty S7 z procesorem MicroBlaze. System generuje serię impulsów sterujących laserem, zgodnie z parametrami wprowadzonymi przez użytkownika przez UART. Licznik napisany w Verilogu generuje N impulsów o czasie trwania T2 w przedziale T1. Jeśli T1 jest dłuższy niż czas generacji impulsów, sygnał pozostaje w stanie niskim do końca T1.
 
 ## Funkcjonalności
 
