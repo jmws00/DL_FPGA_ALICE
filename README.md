@@ -31,4 +31,5 @@ Project based on the Arty S7 board with MicroBlaze processor. The system generat
 
 ## Authors
 Jakub Marszałek
+
 Wiktor Szmyd
